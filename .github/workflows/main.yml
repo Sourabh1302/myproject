@@ -1,30 +1,25 @@
-name: Deploy to Production
-
-on:
-  push:
-    branches:
-      - main  # Trigger deployment on the main branch
-      - master  # Trigger deployment on the master branch, depending on your setup
-
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Or another runner depending on your environment
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2  # This checks out your code from the repository
 
-      - name: Set up Python (or use another setup based on your stack)
-        uses: actions/setup-python@v2
+      - name: Set up Python 3.x  # Ensuring Python is set up if needed
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      - name: Install dependencies (for example, using pip)
+      - name: Install dependencies from requirements.txt
         run: |
-          pip install -r requirements.txt
+          pip install --upgrade pip
+          pip install -r requirements.txt  # Ensure dependencies are installed before deploying
 
-      - name: Run Deployment Script
+      - name: Make deploy.sh executable
+        run: chmod +x ./deploy.sh  # Ensure deploy.sh has executable permissions
+
+      - name: Run deployment script
+        run: ./deploy.sh  # Run the custom deployment script
         env:
-          DEPLOY_ENV: production  # Optional: Set environment variables if needed
-        run: |
-          ./deploy.sh  # Your custom deployment script
+          DEPLOY_ENV: production  # You can pass environment variables to your script here
