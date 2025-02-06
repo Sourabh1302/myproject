@@ -1,60 +1,30 @@
-name: CI/CD Workflow
+name: Deploy to Production
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - main  # Trigger deployment on the main branch
+      - master  # Trigger deployment on the master branch, depending on your setup
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      # Checkout the repository code
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Set up Node.js (example for a JavaScript app)
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      # Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # Run tests
-      - name: Run tests
-        run: npm test
-
   deploy:
     runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main' && success()
+
     steps:
-      # Checkout the repository code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
-      # Log in to Docker Hub (update with your Docker Hub credentials)
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Set up Python (or use another setup based on your stack)
+        uses: actions/setup-python@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          python-version: '3.x'
 
-      # Build and push Docker image
-      - name: Build and push Docker image
+      - name: Install dependencies (for example, using pip)
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }} .
-          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }}
+          pip install -r requirements.txt
 
-      # Deploy to Kubernetes using kubectl
-      - name: Deploy to Kubernetes
+      - name: Run Deployment Script
         env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          DEPLOY_ENV: production  # Optional: Set environment variables if needed
         run: |
-          kubectl apply -f k8s/deployment.yaml
+          ./deploy.sh  # Your custom deployment script
